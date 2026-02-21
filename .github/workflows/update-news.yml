@@ -1,0 +1,46 @@
+name: 부동산 뉴스 자동 업데이트
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install anthropic
+
+      - name: 뉴스 생성
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/generate_news.py
+
+      - name: Git 설정
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 커밋 & 푸시
+        run: |
+          git add index.html
+          git diff --staged --quiet || git commit -m "🏠 뉴스 자동 업데이트"
+          git push
+```
+
+---
+
+**③ 페이지 맨 아래 초록 버튼**
+```
+[ Commit changes ]  ← 클릭
